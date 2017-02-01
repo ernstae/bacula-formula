@@ -1,6 +1,16 @@
+{# Default installation is for PostgreSQL. To switch to MySQL,
+override packages to mysql versions (bacula-...-mysql) and set dbtype = mysql. #}
+
 {% set bacula = salt.pillar.get('bacula', {
   'lookup': salt.grains.filter_by({
     'Debian': {
+      'common_pkgs': ['bacula-common', 'bacula-common-pgsql'],
+      'director_pkgs': ['bacula-director-common', 'bacula-director-pgsql'],
+      'storage_pkgs': ['bacula-sd-pgsql'],
+      'console_pkgs': ['bacula-console'],
+      'client_pkgs': ['bacula-client'],
+      'dbtype': 'pgsql',
+      'encryption': True
     },
     'RedHat': {
     },

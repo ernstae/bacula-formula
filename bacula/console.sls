@@ -1,8 +1,8 @@
-{% from "bacula/params.jinja" import params with context -%}
+{% from "bacula/map.jinja" import bacula with context -%}
 
 bacula-console:
   pkg.installed:
-    - pkgs: {{ params.console_pkgs|json }}
+    - pkgs: {{ bacula.console_pkgs|json }}
 
 bacula-console-config:
   file.managed:

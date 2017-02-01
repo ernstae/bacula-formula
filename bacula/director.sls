@@ -1,8 +1,8 @@
-{% from "bacula/params.jinja" import params with context -%}
+{% from "bacula/map.jinja" import bacula with context -%}
 
 bacula-director:
   pkg.installed:
-    - pkgs: {{ (params.common_pkgs + params.director_pkgs)|json }}
+    - pkgs: {{ (bacula.common_pkgs + params.director_pkgs)|json }}
   service.running:
     - enable: True
 

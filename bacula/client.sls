@@ -1,8 +1,8 @@
-{% from "bacula/params.jinja" import params with context -%}
+{% from "bacula/map.jinja" import bacula with context -%}
 
 bacula-fd:
   pkg.installed:
-    - pkgs: {{ params.client_pkgs|json }}
+    - pkgs: {{ bacula.client_pkgs|json }}
 
 bacula-fd-config:
   file.managed:
@@ -18,11 +18,11 @@ bacula-fd-config:
       director_name: {{ salt['pillar.get']("bacula:client:director", "MyDirector") }}
       password: {{ salt['pillar.get']("bacula:client:password") }}
       monitor_password: {{ salt['pillar.get']("bacula:client:monitor_password", False) }}
-      encryption: {{ params.encryption }}
+      encryption: {{ bacula.encryption }}
     - watch_in:
       - service: bacula-fd
 
-{% if params.encryption %}
+{% if bacula.encryption %}
 bacula-fd-key-pair:
   file.managed:
     - name: /etc/bacula/keypair.pem
