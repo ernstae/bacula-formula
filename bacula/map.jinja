@@ -1,0 +1,8 @@
+{% set bacula = salt.pillar.get('bacula', {
+  'lookup': salt.grains.filter_by({
+    'Debian': {
+    },
+    'RedHat': {
+    },
+  }, default='Debian' ),
+}, merge=True) %}
