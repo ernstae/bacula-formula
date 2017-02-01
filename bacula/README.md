@@ -9,7 +9,7 @@ The bacula director is the central component to bacula. It performs the orchestr
 Here is an example of some pillar data used, within the [director](http://www.bacula.org/7.2.x-manuals/en/main/Configuring_Director.html), to configure a job to backup the logs directory.
 
 ``
-  ge_bacula:  
+  bacula:  
     director:  
       dbname: bacula  
       dbuser: bacula  
@@ -45,7 +45,7 @@ Here is an example of some pillar data used, within the [director](http://www.ba
 The following section is used to configure the connection to the catalog, which is the database holding all of the information about the backup and restore jobs that bacula has run. This is detailed in the [catalog resource](http://www.bacula.org/7.2.x-manuals/en/main/Configuring_Director.html#SECTION0016160000000000000000).
 
 ``
-  ge_bacula:
+  bacula:
     director:
       dbname: bacula
       dbuser: bacula
@@ -55,7 +55,7 @@ The following section is used to configure the connection to the catalog, which 
 The directors password, used for authorising access from other components is defined as follows.
 
 ``
-  ge_bacula:
+  bacula:
     director:
       password: password
 ``
@@ -63,7 +63,7 @@ The directors password, used for authorising access from other components is def
 The clients section contains a list of the bacula file daemons (client servers), that this instance of the director is configured to talk to. This is detailed in the [clients resource](http://www.bacula.org/7.2.x-manuals/en/main/Configuring_Director.html#SECTION0016130000000000000000).
 
 ``
-  ge_bacula:
+  bacula:
     director:
       clients:
         test-1:
@@ -75,7 +75,7 @@ The clients section contains a list of the bacula file daemons (client servers),
 The storage section contains a list of the bacula storage daemons that this director can talk to. For systems using file storage (no tape etc), there will normally only be one defined. This is detailed in the [storage resource](http://www.bacula.org/7.2.x-manuals/en/main/Configuring_Director.html#SECTION0016140000000000000000).
 
 ``
-  ge_bacula:
+  bacula:
     director:
       storage:
         LocalStorage:
@@ -86,7 +86,7 @@ The storage section contains a list of the bacula storage daemons that this dire
 The filesets section defines lists of directories to be included or excluded from a job, along with various options that should be applied to the fileset, such as compression. This is detailed in the [fileset resource](http://www.bacula.org/7.2.x-manuals/en/main/Configuring_Director.html#SECTION001670000000000000000).
 
 ``
-  ge_bacula:
+  bacula:
     director:
       filesets:
         logs:
@@ -102,7 +102,7 @@ The filesets section defines lists of directories to be included or excluded fro
 The jobs section defines a list of the jobs to be executed. A job ties together a lot of the other configuration components, such as clients, filessets, storage, pools, etc to define a unique task occuring on a specific client, running on a specific schedule, stored on a specific archive device, in a specific format and for a specific duration. This is detailed in the [jobs resource](http://www.bacula.org/7.2.x-manuals/en/main/Configuring_Director.html#SECTION001630000000000000000).
 
 ``
-  ge_bacula:
+  bacula:
     director:
       jobs:
         test-1-logs:
@@ -125,7 +125,7 @@ The file daemon is the bacula client component and runs on a target server from 
 Here is an example of the pillar data needed to configure the file daemon.
 
 ``
-  ge_bacula:
+  bacula:
     client:
       password: password
 ``
@@ -139,7 +139,7 @@ The storage daemon is the component in bacula that deals with archiving data. A 
 Here is an example of the pillar data needed to configure the storage daemon.
 
 ``
-  ge_bacula:
+  bacula:
     storage:
       password: password
       devices:
@@ -154,7 +154,7 @@ The bacula console is the command line client program for the director. This is 
 Here is an example of the pillar data needed. Only the password for the director is required.
 
 ``
-  ge_bacula:
+  bacula:
     console:
       password: password
 ``
