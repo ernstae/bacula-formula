@@ -1,36 +1,49 @@
-{% from "ge_bacula/params.jinja" import params with context -%}
+{% from "bacula/map.jinja" import bacula with context -%}
 
 bacula-sd:
   pkg.installed:
-    - pkgs: {{ (params.common_pkgs + params.storage_pkgs)|json }}
+    - pkgs: {{ (bacula.get('lookup').get('common_pkgs', []) + bacula.get('lookup').get('storage_pkgs', []))|json }}
   service.running:
     - enable: True
 
-bacula-sd-config:
+{% for key, data in bacula.get('storage').get('config', {}).items() %}
+{% set path = 'bacula-sd-' + key|lower if key not in ['Storage'] else 'bacula-sd' %}
+{{ path }}-config:
   file.managed:
-    - name: /etc/bacula/bacula-sd.conf
-    - source: salt://ge_bacula/files/bacula-sd.conf
+    - name: /etc/bacula/{{ path }}.conf
+    - source: salt://bacula/files/bacula-tmpl.conf
     - template: jinja
     - user: root
     - group: root
     - defaults:
-      storage_name: {{ salt['pillar.get']("ge_bacula:storage:name", "MyStorage") }}
-      working_directory: {{ salt['pillar.get']("ge_bacula:storage:working_directory", "/var/lib/bacula") }}
-      max_concurrent: {{ salt['pillar.get']("ge_bacula:storage:concurrent", "20") }}
-      director_name: {{ salt['pillar.get']("ge_bacula:storage:director", "MyDirector") }}
-      password: {{ salt['pillar.get']("ge_bacula:storage:password") }}
-      monitor_password: {{ salt['pillar.get']("ge_bacula:storage:monitor_password", False) }} 
+      key: {{ key }}
+      data: {{ data }}
+      {%- if key == 'Storage' %}
+      includes:
+        {%- for include in bacula.get('storage').get('config', {}).keys() %}
+          {%- if include != 'Storage' %}
+        - bacula-sd-{{ include }}
+          {%- endif %}
+        {%- endfor -%}
+      {%- endif %}
     - watch_in:
       - service: bacula-sd
+    - require_in:
+      - service: bacula-sd
+{% endfor %}
 
-bacula-sd-devices-config:
-  file.managed:
-    - name: /etc/bacula/bacula-sd-devices.conf
-    - source: salt://ge_bacula/files/bacula-sd-devices.conf
-    - template: jinja
-    - user: root
-    - group: root
-    - defaults:
-      devices: {{ salt['pillar.get']("ge_bacula:storage:devices", {}) }}
-    - watch_in:
+{% for device in bacula.get('storage').get('config').get('Device', []) %}
+  {% if device.get('Archive Device', False) %}
+bacula-sd-device-{{ device.get('Archive Device')|replace('/', '_') }}-dir:
+  file.directory:
+    - name: {{ device.get('Archive Device') }}
+    - mode: 770
+    - user: bacula
+    - group: bacula
+    - recurse:
+      - mode
+      - user
+    - require_in:
       - service: bacula-sd
+  {% endif %}
+{% endfor %}

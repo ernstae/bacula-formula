@@ -10,17 +10,19 @@ dbconfig-common:
 
 bacula-dbconfig-config:
   file.managed:
-    - name : /etc/dbconfig-common/bacula-director-{{bacula.dbtype}}.conf
+    - name : /etc/dbconfig-common/bacula-director-pgsql.conf
     - source: salt://bacula/files/bacula-director-pgsql.conf
     - template: jinja
     - user: root
     - group: root
     - mode: 0600
     - defaults:
-      dbuser: {{ salt['pillar.get']("bacula:director:dbuser", "") }}
-      dbpassword: {{ salt['pillar.get']("bacula:director:dbpassword", "") }}
-      dbtype: {{ bacula.dbtype }}
-      dbhost: {{ salt['pillar.get']("bacula:director:dbhost", "") }}
-      dbname: {{ salt['pillar.get']("bacula:director:dbname", "") }}
+      dbuser: {{ salt['pillar.get']("bacula:director:config:Catalog:dbuser", "") }}
+      dbpassword: {{ salt['pillar.get']("bacula:director:config:Catalog:dbpassword", "") }}
+      dbtype: pgsql
+      dbhost: {{ salt['pillar.get']("bacula:director:config:Catalog:dbhost", "") }}
+      dbname: {{ salt['pillar.get']("bacula:director:config:Catalog:dbname", "") }}
     - require_in:
       - pkg: bacula-director
+    - require:
+      - service: postgresql-running

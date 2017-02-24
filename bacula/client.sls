@@ -2,40 +2,64 @@
 
 bacula-fd:
   pkg.installed:
-    - pkgs: {{ bacula.client_pkgs|json }}
+    - pkgs: {{ bacula.get('lookup').get('client_pkgs', [])|json }}
+  service.running:
+    - enable: True
 
-bacula-fd-config:
-  file.managed:
-    - name: /etc/bacula/bacula-fd.conf
-    - source: salt://bacula/files/bacula-fd.conf
-    - template: jinja
-    - user: root
-    - group: root
-    - defaults:
-      client_name: {{ salt['pillar.get']("bacula:client:name", grains['localhost']) }}
-      working_directory: {{ salt['pillar.get']("bacula:client:working_directory", "/var/lib/bacula") }}
-      max_concurrent: {{ salt['pillar.get']("bacula:client:concurrent", "20") }}
-      director_name: {{ salt['pillar.get']("bacula:client:director", "MyDirector") }}
-      password: {{ salt['pillar.get']("bacula:client:password") }}
-      monitor_password: {{ salt['pillar.get']("bacula:client:monitor_password", False) }}
-      encryption: {{ bacula.encryption }}
-    - watch_in:
-      - service: bacula-fd
-
-{% if bacula.encryption %}
+{% if bacula.get('client').get('encryption', False) %}
 bacula-fd-key-pair:
   file.managed:
     - name: /etc/bacula/keypair.pem
-    - contents_pillar: bacula:keypair
+    - contents_pillar: bacula:client:encryption:keypair
     - user: root
     - group: root
     - mode: 600
+    - watch_in:
+      - service: bacula-fd
+    - require_in:
+      - service: bacula-fd
 
 bacula-fd-master-key:
   file.managed:
     - name: /etc/bacula/master.cert
-    - contents_pillar: bacula:master_cert
+    - contents_pillar: bacula:client:encryption:master_cert
     - user: root
     - group: root
     - mode: 600
+    - watch_in:
+      - service: bacula-fd
+    - require_in:
+      - service: bacula-fd
 {% endif %}
+
+{% for key, data in bacula.get('client').get('config', {}).items() %}
+
+  {% if key in ['FileDaemon'] and bacula.get('client').get('encryption', False) %}
+    {# update the first FileDaemon config only to include encryption config; nasty, but means we have a single template for all data structures #}
+    {% do data[0].update ({"PKI Signatures": "Yes", "PKI Encryption": "Yes", "PKI Keypair": "/etc/bacula/keypair.pem", "PKI Master Key": "/etc/bacula/master.cert"}) %}
+  {% endif %}
+
+  {% set path = 'bacula-fd-' + key|lower if key not in ['FileDaemon'] else 'bacula-fd' %} # set the path for non-default data structures to external files (see below).
+{{ path }}-config:
+  file.managed:
+    - name: /etc/bacula/{{ path }}.conf
+    - source: salt://bacula/files/bacula-tmpl.conf
+    - template: jinja
+    - user: root
+    - group: root
+    - defaults:
+      key: {{ key }}
+      data: {{ data }}
+      {%- if key == 'FileDaemon' %}
+      includes:
+        {%- for include in bacula.get('client').get('config', {}).keys() %} # for structures that are NOT the default, include the external file.
+          {%- if include != 'FileDaemon' %}
+        - bacula-fd-{{ include }}
+          {%- endif %}
+        {%- endfor -%}
+      {%- endif %}
+    - watch_in:
+      - service: bacula-fd
+    - require_in:
+      - service: bacula-fd
+  {% endfor %}

@@ -1,0 +1,31 @@
+---
+driver:
+  name: vagrant
+  vagrantfiles:
+    - ssh_fix.erb
+
+platforms:
+  - name: ubuntu-14.04
+  - name: ubuntu-16.04
+  - name: centos/7
+
+provisioner:
+  name: salt_solo
+  formula: bacula
+  salt_copy_filter:
+    - .git
+    - .kitchen
+  pillars-from-files:
+    bacula.sls: pillar.example.sls
+  pillars:
+    top.sls:
+      base:
+        '*':
+          - bacula.director
+  state_top:
+    base:
+      '*':
+        - bacula.director
+
+suites:
+  - name: default
