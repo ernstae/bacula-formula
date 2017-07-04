@@ -13,6 +13,12 @@ override packages to mysql versions (bacula-...-mysql) and set dbtype = mysql. #
       'encryption': True
     },
     'RedHat': {
+      'common_pkgs': ['bacula-common'],
+      'director_pkgs': ['bacula-director'],
+      'storage_pkgs': ['bacula-storage'],
+      'console_pkgs': ['bacula-console'],
+      'client_pkgs': ['bacula-client', 'bacula-director'],
+
     },
   }, default='Debian' ),
 }, merge=True) %}

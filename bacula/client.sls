@@ -6,6 +6,27 @@ bacula-fd:
   service.running:
     - enable: True
 
+bacula-working-directory:
+  file.directory:
+    - name: {{ bacula.get('lookup').get('bacula:client:config:FileDaemon:WorkingDirectory', '/var/lib/bacula') }}
+    - user: root
+    - group: root
+    - mode: 755
+    - makedirs: True
+    - require_in:
+      - service: bacula-fd
+
+bacula-pid-directory:
+  file.directory:
+    - name: {{ bacula.get('lookup').get('bacula:client:config:FileDaemon:Pid Directory', '/var/run/bacula') }}
+    - user: root
+    - group: root
+    - mode: 755
+    - makedirs: True
+    - require_in:
+      - service: bacula-fd
+
+
 {% if bacula.get('client').get('encryption', False) %}
 bacula-fd-key-pair:
   file.managed:
